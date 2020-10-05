@@ -11,6 +11,7 @@
 
 import React, { useState, useEffect } from 'react';
 import {
+  Button,
   Image,
   SafeAreaView,
   StyleSheet,
@@ -18,6 +19,7 @@ import {
   View,
   Text,
   StatusBar,
+  TouchableHighlight,
 } from 'react-native';
 
 interface APIGetPhotosResponse {
@@ -57,20 +59,42 @@ const App = () => {
     load();
   }, []);
 
-  const renderPhotoRow = (row: APIPhoto[]) => {
-    console.log('row:', row);
+  const renderPhotoRow = (row: APIGetPhotosResponse) => {
+    const rowPhotos = row.photos;
+    const rowImages = rowPhotos.map((p: APIPhoto) => {
+      return <Image source={{ uri: p.url }} style={styles.photo} key={p.id} />;
+    });
+    if (rowPhotos.length < 3) {
+      rowImages.push(renderPhotoAdder());
+    }
     return (
-      <View style={styles.photoRow}>
-        {row.map((p) => (
-          <Image source={{ uri: p.url }} style={styles.photo} key={p.id} />
-        ))}
+      <View style={styles.photoRow} key={row.id ?? 1}>
+        {rowImages}
       </View>
     );
   };
 
+  const addPhoto = () => {};
+
+  const renderPhotoAdder = () => {
+    return (
+      <TouchableHighlight onPress={addPhoto}>
+        <View style={styles.adder}>
+          <Text>+</Text>
+        </View>
+      </TouchableHighlight>
+    );
+  };
+
+  const renderPhotoViewer = () => {
+    return photos.map((row: APIGetPhotosResponse) => {
+      return renderPhotoRow(row);
+    });
+  };
+
   return (
     <View style={styles.photoContainer}>
-      {photos.map((row: APIGetPhotosResponse) => renderPhotoRow(row.photos))}
+      {isLoading ? <Text>Loading...</Text> : renderPhotoViewer()}
     </View>
   );
 };
@@ -86,7 +110,18 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     margin: 10,
   },
-  photo: { width: 100, height: 200, margin: 10 },
+  photo: { width: 100, height: 200, margin: 10, borderRadius: 5 },
+  adder: {
+    borderRadius: 5,
+    borderColor: 'grey',
+    borderWidth: 1,
+    width: 100,
+    height: 200,
+    margin: 10,
+    alignContent: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+  },
 });
 
 export default App;
